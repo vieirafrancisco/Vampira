@@ -15,6 +15,14 @@ Um jogo feito em pygame com o tema de Vampira
 - [x] Upar para o github
 - [x] Escrever sobre como o jogo vai funcionar
 
+### Features:
+- [x] Criar grid de tiles
+- [x] Adicionar sprite de jogador
+    - [x] Criar movimentação com click
+    - [ ] Codar algoritmo de movimentação
+- [x] Adicionar sprite de paredes
+    - [ ] Algoritmo de colisão
+
 ## Sobre o jogo:
 
 **Descrição:**  
