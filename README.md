@@ -32,9 +32,9 @@ run the game:
 - [x] Criar grid de tiles
 - [x] Adicionar sprite de jogador
     - [x] Criar movimentação com click
-    - [ ] Codar algoritmo de movimentação
+    - [x] Codar algoritmo de movimentação (implementar dijkstra)
 - [x] Adicionar sprite de paredes
-    - [ ] Algoritmo de colisão
+    - [x] Algoritmo de colisão
 
 ## Sobre o jogo:
 

@@ -5,8 +5,8 @@ from pygame.locals import *
 
 from settings import *
 from src.sprites.player import Player
-from src.sprites.wall import Wall
-from utils.functions import get_map_by_image
+from src.sprites.map_sprites import Wall
+from utils.functions import get_map_by_image, dijkstra, get_two_nodes_distance
 
 class Game:
     def __init__(self):
@@ -21,13 +21,35 @@ class Game:
         self.display_grid = True
         self.sprites = pygame.sprite.LayeredUpdates()
         self.walls = pygame.sprite.Group()
-        map_array = get_map_by_image(os.path.join("resources", "maps", "map01.png"))
-        for i, row in enumerate(map_array):
+        self.map_array = get_map_by_image(os.path.join("resources", "maps", "map01.png"))
+        for i, row in enumerate(self.map_array):
             for j, col in enumerate(row):
-                if map_array[i][j] == "WALL":
-                    Wall(self, i * TILE_SIZE, j * TILE_SIZE)
-                elif map_array[i][j] == "PLAYER":
-                    self.player = Player(self, i * TILE_SIZE, j * TILE_SIZE)
+                if self.map_array[i][j] == WALL:
+                    Wall(self, i, j)
+                elif self.map_array[i][j] == PLAYER:
+                    self.player = Player(self, i, j)
+        self.make_graph()
+
+    def is_node(self, coord):
+        x, y = coord
+        if self.map_array[x][y] not in NOT_NODES:
+            return True
+        else:
+            return False
+
+    def make_graph(self):
+        self.graph = {}
+        h = len(self.map_array)
+        w = len(self.map_array[0])
+        def func(pos):
+            x, y = pos
+            return x >= 0 and x < h and y >= 0 and y < w and self.is_node((x, y))
+        for i in range(h):
+            for j in range(w):
+                if self.is_node((i, j)):
+                    values = map(lambda x: (1, x), filter(func, [(i, j-1), (i+1, j), (i, j+1), (i-1,j)]))
+                    self.graph[(i, j)] = list(values)
+        self.dists = dijkstra(self.player.pos, self.graph)
 
     def cleanup(self):
         pygame.quit()

@@ -1,3 +1,5 @@
+import heapq
+
 import pygame
 
 from settings import *
@@ -28,7 +30,38 @@ def get_map_by_image(image_path):
             image_color = img.get_at((i, j))
             similar_color = similarity(image_color)
             if similar_color == BROWN:
-                map_array[i][j] = "WALL"
+                map_array[i][j] = WALL
             elif similar_color == BLUE:
-                map_array[i][j] = "PLAYER"
+                map_array[i][j] = PLAYER
     return map_array
+
+def get_two_nodes_distance(n1: tuple, n2: tuple) -> int:
+    """
+    Function to calculate the distance between two nodes (tiles)
+    n1, n1: tuple(x, y)
+    return: an integer representing the distance between the two nodes
+    """
+    dx = abs(n2[0] - n1[0])
+    dy = abs(n2[1] - n1[1])
+    return sum([dx, dy])
+
+def dijkstra(p, graph):
+    """
+    p: player position
+    graph: dictionary of adjancences
+    return: list of distances and the path to a target node
+    """
+    n = len(graph)
+    dist = {key: INF for key in graph.keys()}
+    visited = {key: False for key in graph.keys()}
+    dist[p] = 0
+    p_queue = []
+    heapq.heappush(p_queue, (0, p))
+    while p_queue != []:
+        u = heapq.heappop(p_queue)
+        visited[u[1]] = True
+        for v in graph[u[1]]:
+            if not visited[v[1]] and u[0] + v[0] < dist[v[1]]:
+                dist[v[1]] = u[0] + v[0]
+                heapq.heappush(p_queue, (dist[v[1]], v[1]))
+    return dist
