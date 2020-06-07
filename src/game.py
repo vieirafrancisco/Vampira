@@ -21,7 +21,7 @@ class Game:
         self.display_grid = False
         self.sprites = pygame.sprite.LayeredUpdates()
         self.walls = pygame.sprite.Group()
-        self.player_image = pygame.image.load(os.path.join("resources", "spritesheets", "rpg_maker_characters.png"))
+        self.player_image = pygame.image.load(os.path.join("resources", "spritesheets", "vampira_spritesheet_01.png"))
         self.wall_image = pygame.image.load(os.path.join("resources", "spritesheets", "castle_wall.png"))
         self.map_array = get_map_by_image(os.path.join("resources", "maps", "map01.png"))
         for i, row in enumerate(self.map_array):
@@ -69,16 +69,21 @@ class Game:
     def render(self):
         self.sprites.draw(self.surface)
         if self.display_grid:
-            for i in range(0, WIDTH, TILE_SIZE):
-                pygame.draw.line(self.surface, GRAY, (i, 0), (i, HEIGHT))
-            for j in range(0, HEIGHT, TILE_SIZE):
-                pygame.draw.line(self.surface, GRAY, (0, j), (WIDTH, j))
+            for i in range(0, CANVAS_WIDTH, TILE_SIZE):
+                pygame.draw.line(self.surface, GRAY, (i, 0), (i, CANVAS_HEIGHT))
+            for j in range(0, CANVAS_HEIGHT, TILE_SIZE):
+                pygame.draw.line(self.surface, GRAY, (0, j), (CANVAS_WIDTH, j))
         dists_gt_zero_and_leq_three = list(filter(lambda x: 0 < x[1] <= 3, self.dists.items()))
         for node, _ in dists_gt_zero_and_leq_three:
             x, y = node
             surface = pygame.Surface((TILE_SIZE, TILE_SIZE), pygame.SRCALPHA)
             surface.fill((0, 255, 0, 75))
             self.surface.blit(surface, (x * TILE_SIZE, y * TILE_SIZE))
+        # HUD - inventory
+        y = CANVAS_HEIGHT
+        for x in range(0, WIDTH, 32):
+            pygame.draw.rect(self.surface, DARK_BROWN, (x, y, TILE_SIZE, TILE_SIZE))
+            pygame.draw.rect(self.surface, BLACK, (x, y, TILE_SIZE, TILE_SIZE), 3)
 
     def loop(self):
         self.sprites.update()
