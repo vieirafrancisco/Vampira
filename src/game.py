@@ -72,7 +72,7 @@ class Game:
             for j in range(0, HEIGHT, TILE_SIZE):
                 pygame.draw.line(self.surface, GRAY, (0, j), (WIDTH, j))
         dists_less_than_three = list(filter(lambda x: x[1] <= 3, self.dists.items()))
-        for node, _ in dists_less_than_three:
+        for node, _ in dists_less_then_three:
             x, y = node
             surface = pygame.Surface((TILE_SIZE, TILE_SIZE), pygame.SRCALPHA)
             surface.fill((0, 255, 0, 75))
