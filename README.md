@@ -36,6 +36,9 @@ run the game:
 - [x] Adicionar sprite de paredes
     - [x] Algoritmo de colisão
 
+### Animation:
+- [ ] Draw player animation
+
 ## Sobre o jogo:
 
 **Descrição:**  

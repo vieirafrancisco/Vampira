@@ -54,6 +54,7 @@ def dijkstra(p, graph):
     n = len(graph)
     dist = {key: INF for key in graph.keys()}
     visited = {key: False for key in graph.keys()}
+    origin = {key: -1 for key in graph.keys()}
     dist[p] = 0
     p_queue = []
     heapq.heappush(p_queue, (0, p))
@@ -63,5 +64,6 @@ def dijkstra(p, graph):
         for v in graph[u[1]]:
             if not visited[v[1]] and u[0] + v[0] < dist[v[1]]:
                 dist[v[1]] = u[0] + v[0]
+                origin[v[1]] = u[1]
                 heapq.heappush(p_queue, (dist[v[1]], v[1]))
-    return dist
+    return dist, origin

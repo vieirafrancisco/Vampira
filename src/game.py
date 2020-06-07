@@ -49,7 +49,17 @@ class Game:
                 if self.is_node((i, j)):
                     values = map(lambda x: (1, x), filter(func, [(i, j-1), (i+1, j), (i, j+1), (i-1,j)]))
                     self.graph[(i, j)] = list(values)
-        self.dists = dijkstra(self.player.pos, self.graph)
+        self.dists, self.origins = dijkstra(self.player.pos, self.graph)
+        def get_paths():
+            paths = {key: [] for key in self.origins.keys()}
+            for node in self.origins.keys():
+                value = self.origins[node]
+                while value != -1:
+                    paths[node].append(value)
+                    value = self.origins[value]
+                paths[node].reverse()
+            return paths
+        self.paths = get_paths()
 
     def cleanup(self):
         pygame.quit()
@@ -61,6 +71,12 @@ class Game:
                 pygame.draw.line(self.surface, GRAY, (i, 0), (i, HEIGHT))
             for j in range(0, HEIGHT, TILE_SIZE):
                 pygame.draw.line(self.surface, GRAY, (0, j), (WIDTH, j))
+        dists_less_than_three = list(filter(lambda x: x[1] <= 3, self.dists.items()))
+        for node, _ in dists_less_than_three:
+            x, y = node
+            surface = pygame.Surface((TILE_SIZE, TILE_SIZE), pygame.SRCALPHA)
+            surface.fill((0, 255, 0, 75))
+            self.surface.blit(surface, (x * TILE_SIZE, y * TILE_SIZE))
 
     def loop(self):
         self.sprites.update()
