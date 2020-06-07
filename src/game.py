@@ -21,6 +21,7 @@ class Game:
         self.display_grid = True
         self.sprites = pygame.sprite.LayeredUpdates()
         self.walls = pygame.sprite.Group()
+        self.player_image = pygame.image.load(os.path.join("resources", "spritesheets", "rpg_maker_characters.png"))
         self.map_array = get_map_by_image(os.path.join("resources", "maps", "map01.png"))
         for i, row in enumerate(self.map_array):
             for j, col in enumerate(row):
@@ -71,7 +72,7 @@ class Game:
                 pygame.draw.line(self.surface, GRAY, (i, 0), (i, HEIGHT))
             for j in range(0, HEIGHT, TILE_SIZE):
                 pygame.draw.line(self.surface, GRAY, (0, j), (WIDTH, j))
-        dists_less_than_three = list(filter(lambda x: x[1] <= 3, self.dists.items()))
+        dists_less_then_three = list(filter(lambda x: x[1] <= 3, self.dists.items()))
         for node, _ in dists_less_then_three:
             x, y = node
             surface = pygame.Surface((TILE_SIZE, TILE_SIZE), pygame.SRCALPHA)

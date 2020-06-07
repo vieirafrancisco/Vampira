@@ -12,7 +12,7 @@ class Player(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self, self.groups)
         self.game = game
         self.image = pygame.Surface((PLAYER_WIDTH, PLAYER_HEIGHT))
-        self.image.fill(WHITE)
+        self.image.blit(self.game.player_image, (0, 0), (1 * PLAYER_WIDTH, 4 * PLAYER_HEIGHT, TILE_SIZE, TILE_SIZE))
         self.rect = self.image.get_rect()
         self.rect.topleft = (x * PLAYER_WIDTH, y * PLAYER_HEIGHT)
         self.pos = (x, y)
