@@ -61,20 +61,18 @@ class Player(pygame.sprite.Sprite):
             y = math.floor(mouse_pos[1] / TILE_SIZE)
             if inside_canvas(x, y) and self.game.map_array[x][y] not in NOT_NODES:
                 d = self.game.dists[(x, y)]
-                if 0 < d <= self.walk_range and not self.lock:
+                if 0 < d <= self.walk_range and not self.is_moving:
                     path_list = self.game.paths[x, y].copy()
                     path_list.append((x, y))
                     self.movement_list = get_movement_list(path_list)
                     self.target_node = (x, y)
                     self.is_moving = True
-                    self.lock = True
-        if self.is_moving and self.lock:
+        if self.is_moving:
             if self.rect.x % TILE_SIZE == 0 and self.rect.y % TILE_SIZE == 0 and self.movement_list != []:
                 self.curr_node = self.movement_list[0]
                 self.movement_list = self.movement_list[1:]
             if (self.rect.x / TILE_SIZE, self.rect.y / TILE_SIZE) == self.target_node:
                 self.is_moving = False
-                self.lock = False
                 self.curr_node = (0, 0)
                 self.pos = self.target_node
                 x, y = self.pos
