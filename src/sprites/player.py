@@ -38,6 +38,8 @@ class Player(pygame.sprite.Sprite):
         self.target_node = (0, 0)
         self.curr_node = (0, 0)
         self.lock = False
+        self.last_update = pygame.time.get_ticks()
+        self.animation_count = 0
 
     def load_images(self):
         self.images = {}
@@ -51,7 +53,21 @@ class Player(pygame.sprite.Sprite):
             self.images[image_name].set_colorkey(COLOR_KEY)
 
     def animate(self):
-        pass
+        now = pygame.time.get_ticks()
+        if now - self.last_update >= 150:
+            self.last_update = now
+            x, y = self.curr_node
+            if x or y:
+                if x == 1:
+                    self.image = self.images[f"right_{self.animation_count}"]
+                elif x == -1:
+                    self.image = self.images[f"left_{self.animation_count}"]
+                elif y == 1:
+                    self.image = self.images[f"down_{self.animation_count}"]
+                elif y == -1:
+                    self.image = self.images[f"up_{self.animation_count}"]
+                self.animation_count = (self.animation_count + 1) % 2
+                print(x, y, self.animation_count)
 
     def update(self):
         mouse_click = pygame.mouse.get_pressed()[0]
@@ -89,3 +105,4 @@ class Player(pygame.sprite.Sprite):
             else:
                 self.rect.x += PLAYER_SPEED * self.curr_node[0]
                 self.rect.y += PLAYER_SPEED * self.curr_node[1]
+        self.animate()
