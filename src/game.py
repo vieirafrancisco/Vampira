@@ -63,6 +63,9 @@ class Game:
             return paths
         self.paths = get_paths()
 
+    def pass_turn(self):
+        pass
+
     def cleanup(self):
         pygame.quit()
 
@@ -73,12 +76,13 @@ class Game:
                 pygame.draw.line(self.surface, GRAY, (i, 0), (i, CANVAS_HEIGHT))
             for j in range(0, CANVAS_HEIGHT, TILE_SIZE):
                 pygame.draw.line(self.surface, GRAY, (0, j), (CANVAS_WIDTH, j))
-        dists_gt_zero_and_leq_three = list(filter(lambda x: 0 < x[1] <= 3, self.dists.items()))
-        for node, _ in dists_gt_zero_and_leq_three:
-            x, y = node
-            surface = pygame.Surface((TILE_SIZE, TILE_SIZE), pygame.SRCALPHA)
-            surface.fill((0, 255, 0, 75))
-            self.surface.blit(surface, (x * TILE_SIZE, y * TILE_SIZE))
+        if not self.player.is_moving:
+            dists_gt_zero_and_leq_three = list(filter(lambda x: 0 < x[1] <= 3, self.dists.items()))
+            for node, _ in dists_gt_zero_and_leq_three:
+                x, y = node
+                surface = pygame.Surface((TILE_SIZE, TILE_SIZE), pygame.SRCALPHA)
+                surface.fill((0, 255, 0, 75))
+                self.surface.blit(surface, (x * TILE_SIZE, y * TILE_SIZE))
         # HUD - inventory
         y = CANVAS_HEIGHT
         for x in range(0, WIDTH, 32):
