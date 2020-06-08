@@ -67,7 +67,6 @@ class Player(pygame.sprite.Sprite):
                 elif y == -1:
                     self.image = self.images[f"up_{self.animation_count}"]
                 self.animation_count = (self.animation_count + 1) % 2
-                print(x, y, self.animation_count)
 
     def update(self):
         mouse_click = pygame.mouse.get_pressed()[0]
@@ -102,6 +101,7 @@ class Player(pygame.sprite.Sprite):
                     self.image = self.images["down_stand"]
                 elif y - last_node[1] == -1:
                     self.image = self.images["up_stand"]
+                self.game.pass_turn()
             else:
                 self.rect.x += PLAYER_SPEED * self.curr_node[0]
                 self.rect.y += PLAYER_SPEED * self.curr_node[1]
