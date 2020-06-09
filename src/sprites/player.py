@@ -37,7 +37,6 @@ class Player(pygame.sprite.Sprite):
         self.is_moving = False
         self.target_node = (0, 0)
         self.curr_node = (0, 0)
-        self.lock = False
         self.last_update = pygame.time.get_ticks()
         self.animation_count = 0
 

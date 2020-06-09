@@ -1,4 +1,5 @@
 import os
+import time
 
 import pygame
 from pygame.locals import *
@@ -26,6 +27,7 @@ class Game:
         self.mobs = pygame.sprite.Group()
         self.player_image = pygame.image.load(os.path.join("resources", "spritesheets", "vampira_spritesheet_01.png"))
         self.wall_image = pygame.image.load(os.path.join("resources", "spritesheets", "castle_wall_2.png"))
+        self.mob_image = pygame.image.load(os.path.join("resources", "spritesheets", "mob_spritesheet_1.png"))
         self.map_array = get_map_by_image(os.path.join("resources", "maps", "map_1.png"))
         for i, row in enumerate(self.map_array):
             for j, col in enumerate(row):
@@ -90,7 +92,7 @@ class Game:
             for j in range(0, CANVAS_HEIGHT, TILE_SIZE):
                 pygame.draw.line(self.surface, GRAY, (0, j), (CANVAS_WIDTH, j))
         if not self.player.is_moving and self.in_turn:
-            dists_gt_zero_and_leq_player_wr = list(filter(lambda x: 0 < x[1] <= self.player.walk_range, self.dists.items()))
+            dists_gt_zero_and_leq_player_wr = list(filter(lambda x: 0 < x[1] <= self.player.walk_range and self.is_node(x[0]), self.dists.items()))
             for node, _ in dists_gt_zero_and_leq_player_wr:
                 x, y = node
                 surface = pygame.Surface((TILE_SIZE, TILE_SIZE), pygame.SRCALPHA)
