@@ -22,7 +22,7 @@ class Game:
         self.sprites = pygame.sprite.LayeredUpdates()
         self.walls = pygame.sprite.Group()
         self.player_image = pygame.image.load(os.path.join("resources", "spritesheets", "vampira_spritesheet_01.png"))
-        self.wall_image = pygame.image.load(os.path.join("resources", "spritesheets", "castle_wall.png"))
+        self.wall_image = pygame.image.load(os.path.join("resources", "spritesheets", "castle_wall_2.png"))
         self.map_array = get_map_by_image(os.path.join("resources", "maps", "map01.png"))
         for i, row in enumerate(self.map_array):
             for j, col in enumerate(row):
@@ -86,7 +86,7 @@ class Game:
         # HUD - inventory
         y = CANVAS_HEIGHT
         for x in range(0, WIDTH, 32):
-            pygame.draw.rect(self.surface, DARK_BROWN, (x, y, TILE_SIZE, TILE_SIZE))
+            pygame.draw.rect(self.surface, DARK_GRAY, (x, y, TILE_SIZE, TILE_SIZE))
             pygame.draw.rect(self.surface, BLACK, (x, y, TILE_SIZE, TILE_SIZE), 3)
 
     def loop(self):
@@ -104,7 +104,7 @@ class Game:
         while self.running:
             for event in pygame.event.get():
                 self.event(event)
-            self.surface.fill(DARK_GRAY)
+            self.surface.fill(DARK_BLUE)
             self.render()
             self.loop()
             pygame.display.flip()
