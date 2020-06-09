@@ -33,6 +33,8 @@ def get_map_by_image(image_path):
                 map_array[i][j] = WALL
             elif similar_color == BLUE:
                 map_array[i][j] = PLAYER
+            elif similar_color == GREEN:
+                map_array[i][j] = MOB
     return map_array
 
 def get_two_nodes_distance(n1: tuple, n2: tuple) -> int:

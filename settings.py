@@ -7,6 +7,7 @@ TILE_SIZE = 32
 FPS = 60
 vec = pygame.Vector2
 INF = math.inf
+DIRECTIONS = [(0, 1), (0, -1), (1, 0), (-1, 0)]
 
 # window
 WIDTH = TILE_SIZE * 9
@@ -34,6 +35,9 @@ PLAYER_HEIGHT = 32
 PLAYER_WALK_RANGE = 3
 PLAYER_SPEED = 2
 
+# mob
+MOB_SPEED = 2
+
 # layers
 PLAYER_LAYER = 2
 WALL_LAYER = 1
@@ -42,4 +46,5 @@ WALL_LAYER = 1
 PLAYER = 0
 WALL = 1
 GROUND = 2
-NOT_NODES = [WALL]
+MOB = 3
+NOT_NODES = [WALL, MOB]

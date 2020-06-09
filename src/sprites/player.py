@@ -89,6 +89,7 @@ class Player(pygame.sprite.Sprite):
             if (self.rect.x / TILE_SIZE, self.rect.y / TILE_SIZE) == self.target_node:
                 self.is_moving = False
                 self.curr_node = (0, 0)
+                self.game.swap_entity_position(self.pos, self.target_node)
                 self.pos = self.target_node
                 x, y = self.pos
                 last_node = self.game.paths[x, y][-1]
