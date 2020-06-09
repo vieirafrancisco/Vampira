@@ -53,10 +53,13 @@ class Mob(pygame.sprite.Sprite):
 
     def update(self):
         if not self.is_moving:
-            self.possible_directions = list(filter(lambda p: self.game.is_node((p[0] + self.pos[0], p[1] + self.pos[1])), DIRECTIONS))
-            self.dir = random.choice(self.possible_directions)
-            self.is_moving = True
-            self.target_node = (self.pos[0] + self.dir[0], self.pos[1] + self.dir[1])
+            def is_node(x, y):
+                return self.game.is_node((x, y)) and (x, y) != self.game.player.pos
+            self.possible_directions = list(filter(lambda p: is_node(p[0] + self.pos[0], p[1] + self.pos[1]), DIRECTIONS))
+            if self.possible_directions != []:
+                self.dir = random.choice(self.possible_directions)
+                self.is_moving = True
+                self.target_node = (self.pos[0] + self.dir[0], self.pos[1] + self.dir[1])
         else:
             if (self.rect.x / TILE_SIZE, self.rect.y / TILE_SIZE) != self.target_node:
                 self.rect.x += MOB_SPEED * self.dir[0]
@@ -65,7 +68,6 @@ class Mob(pygame.sprite.Sprite):
                 self.is_moving = False
                 self.game.swap_entity_position(self.pos, (self.rect.x // TILE_SIZE, self.rect.y // TILE_SIZE))
                 self.pos = (self.rect.x // TILE_SIZE, self.rect.y // TILE_SIZE)
-                has_player = self.verify_sides()
                 if self.dir[0] == 1:
                     self.image = self.images["right_stand"]
                 elif self.dir[0] == -1:
@@ -74,6 +76,7 @@ class Mob(pygame.sprite.Sprite):
                     self.image = self.images["down_stand"]
                 elif self.dir[1] == -1:
                     self.image = self.images["up_stand"]
+                has_player = self.verify_sides()
                 if not has_player:
                     print("not has player!")
                 else:
@@ -81,14 +84,21 @@ class Mob(pygame.sprite.Sprite):
         self.animate()
 
     def verify_sides(self):
-        for d in filter(lambda x: x != self.dir, self.possible_directions):
+        def func(d):
+            x, y = d
+            dx = x + self.pos[0]
+            dy = y + self.pos[1]
+            back_dir = (self.dir[0] * -1, self.dir[1] * -1)
+            return self.game.is_node((dx, dy)) and (dx, dy) != self.game.player.pos and (x, y) != back_dir
+        new_possible_directions = filter(func, DIRECTIONS)
+        for d in new_possible_directions:
             x = self.pos[0] + d[0]
             y = self.pos[1] + d[1]
             while self.game.map_array[x][y] != WALL:
                 if self.game.map_array[x][y] == PLAYER:
                     return True
-                x = x + d[0]
-                y = y + d[1]
+                x += d[0]
+                y += d[1]
         return False
  
         

@@ -43,8 +43,9 @@ PLAYER_LAYER = 2
 WALL_LAYER = 1
 
 # indentifiers
-PLAYER = 0
-WALL = 1
-GROUND = 2
-MOB = 3
+EMPTY = 0
+PLAYER = 1
+WALL = 2
+GROUND = 3
+MOB = 4
 NOT_NODES = [WALL, MOB]

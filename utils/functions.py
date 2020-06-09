@@ -24,7 +24,7 @@ def similarity(color):
 def get_map_by_image(image_path):
     img = pygame.image.load(image_path)
     w, h = img.get_size()
-    map_array = [['' for i in range(h)] for j in range(w)]
+    map_array = [[EMPTY for i in range(h)] for j in range(w)]
     for i in range(w):
         for j in range(h):
             image_color = img.get_at((i, j))

@@ -50,8 +50,6 @@ class Game:
         xa, ya = pos_a
         xb, yb = pos_b
         self.map_array[xa][ya], self.map_array[xb][yb] = self.map_array[xb][yb], self.map_array[xa][ya]
-        #print(self.map_array)
-        #print("==============================================================================")
 
     def make_graph(self):
         self.graph = {}
@@ -76,6 +74,8 @@ class Game:
                 paths[node].reverse()
             return paths
         self.paths = get_paths()
+        #print(self.dists)
+        #print("================================================================================================================")
 
     def pass_turn(self):
         self.in_turn = False
@@ -110,6 +110,7 @@ class Game:
             self.mobs.update()
             if not any([mob.is_moving for mob in self.mobs.sprites()]):
                 self.in_turn = True
+                self.make_graph()
 
     def event(self, event):
         if event.type == QUIT:
