@@ -18,6 +18,7 @@ class Game:
 
     def init(self):
         pygame.init()
+        pygame.font.init()
         self.running = True
         self.surface = pygame.display.set_mode((WIDTH, HEIGHT))
         self.display_grid = False
@@ -38,6 +39,10 @@ class Game:
                 elif self.map_array[i][j] == PLAYER:
                     self.player = Player(self, i, j)
         self.make_graph()
+
+    def cleanup(self):
+        pygame.quit()
+        pygame.font.quit()
 
     def is_node(self, coord):
         x, y = coord
@@ -74,9 +79,6 @@ class Game:
                 paths[node].reverse()
             return paths
         self.paths = get_paths()
-        
-    def cleanup(self):
-        pygame.quit()
 
     def render(self):
         self.sprites.draw(self.surface)
@@ -98,6 +100,7 @@ class Game:
         for x in range(0, WIDTH, 32):
             pygame.draw.rect(self.surface, DARK_GRAY, (x, y, TILE_SIZE, TILE_SIZE))
             pygame.draw.rect(self.surface, BLACK, (x, y, TILE_SIZE, TILE_SIZE), 3)
+        #self.game_over_screen()
 
     def loop(self):
         if self.in_turn:
@@ -132,3 +135,16 @@ class Game:
             self.clock.tick(FPS)
             pygame.display.set_caption(f"Vampira - FPS: {round(self.clock.get_fps(), 2)}")
         self.cleanup()
+
+    def menu_screen(self):
+        pass
+
+    def game_over_screen(self):
+        go_surface = pygame.Surface((WIDTH, HEIGHT)).convert_alpha()
+        go_surface.fill((0, 0, 0, 210))
+        font = pygame.font.SysFont('Comic Sans MS', 30)
+        go_text_surface = font.render("Game Over", True, RED)
+        self.surface.blit(go_surface, (0, 0))
+        self.surface.blit(go_text_surface, (WIDTH // 4, 2 * HEIGHT // 5))
+        font = pygame.font.SysFont('Comic Sans MS', 15)
+        self.surface.blit(font.render("Press any key to continue!", True, WHITE), (WIDTH // 5, 2 * HEIGHT // 5 + 40))
