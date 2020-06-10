@@ -101,7 +101,7 @@ class Player(pygame.sprite.Sprite):
                     self.image = self.images["down_stand"]
                 elif y - last_node[1] == -1:
                     self.image = self.images["up_stand"]
-                self.game.pass_turn()
+                self.game.in_turn = False
             else:
                 self.rect.x += PLAYER_SPEED * self.curr_node[0]
                 self.rect.y += PLAYER_SPEED * self.curr_node[1]

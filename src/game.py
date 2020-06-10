@@ -8,7 +8,7 @@ from settings import *
 from src.sprites.player import Player
 from src.sprites.map_sprites import Wall
 from src.sprites.mob import Mob
-from utils.functions import get_map_by_image, dijkstra, get_two_nodes_distance
+from utils.functions import get_map_by_image, dijkstra, get_two_nodes_distance, memset
 
 class Game:
     def __init__(self):
@@ -74,12 +74,7 @@ class Game:
                 paths[node].reverse()
             return paths
         self.paths = get_paths()
-        #print(self.dists)
-        #print("================================================================================================================")
-
-    def pass_turn(self):
-        self.in_turn = False
-
+        
     def cleanup(self):
         pygame.quit()
 
@@ -105,12 +100,18 @@ class Game:
             pygame.draw.rect(self.surface, BLACK, (x, y, TILE_SIZE, TILE_SIZE), 3)
 
     def loop(self):
-        self.sprites.update()
-        if not self.in_turn:
+        if self.in_turn:
+            self.sprites.update()
+            self.mobs_turn_state = memset(0, len(self.mobs.sprites()))
+        else:
             self.mobs.update()
-            if not any([mob.is_moving for mob in self.mobs.sprites()]):
+            for idx, mob in enumerate(self.mobs.sprites()):
+                if not mob.is_moving:
+                    self.mobs_turn_state[idx] = 1
+            if all(self.mobs_turn_state):
                 self.in_turn = True
                 self.make_graph()
+                self.mobs_turn_state = memset(0, len(self.mobs.sprites()))
 
     def event(self, event):
         if event.type == QUIT:

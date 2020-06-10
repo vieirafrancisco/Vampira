@@ -60,14 +60,14 @@ class Mob(pygame.sprite.Sprite):
                 self.dir = random.choice(self.possible_directions)
                 self.is_moving = True
                 self.target_node = (self.pos[0] + self.dir[0], self.pos[1] + self.dir[1])
+                self.game.swap_entity_position(self.pos, self.target_node)
         else:
             if (self.rect.x / TILE_SIZE, self.rect.y / TILE_SIZE) != self.target_node:
                 self.rect.x += MOB_SPEED * self.dir[0]
                 self.rect.y += MOB_SPEED * self.dir[1]
             else:
                 self.is_moving = False
-                self.game.swap_entity_position(self.pos, (self.rect.x // TILE_SIZE, self.rect.y // TILE_SIZE))
-                self.pos = (self.rect.x // TILE_SIZE, self.rect.y // TILE_SIZE)
+                self.pos = self.target_node
                 if self.dir[0] == 1:
                     self.image = self.images["right_stand"]
                 elif self.dir[0] == -1:

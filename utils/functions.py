@@ -69,3 +69,6 @@ def dijkstra(p, graph):
                 origin[v[1]] = u[1]
                 heapq.heappush(p_queue, (dist[v[1]], v[1]))
     return dist, origin
+
+def memset(value, size):
+    return [value for _ in range(size)]
