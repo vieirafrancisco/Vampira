@@ -77,10 +77,8 @@ class Mob(pygame.sprite.Sprite):
                 elif self.dir[1] == -1:
                     self.image = self.images["up_stand"]
                 has_player = self.verify_sides()
-                if not has_player:
-                    print("not has player!")
-                else:
-                    print("has player!")
+                if has_player:
+                    self.game.running = False
         self.animate()
 
     def verify_sides(self):

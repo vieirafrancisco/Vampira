@@ -1,5 +1,5 @@
 import os
-import time
+import sys
 
 import pygame
 from pygame.locals import *
@@ -12,23 +12,24 @@ from utils.functions import get_map_by_image, dijkstra, get_two_nodes_distance, 
 
 class Game:
     def __init__(self):
-        self.running = False
-        self.surface = None
-        self.clock = pygame.time.Clock()
-
-    def init(self):
         pygame.init()
         pygame.font.init()
-        self.running = True
+        self.running = False
         self.surface = pygame.display.set_mode((WIDTH, HEIGHT))
+        self.clock = pygame.time.Clock()
+        self.load_data()
+
+    def load_data(self):
+        self.player_image = pygame.image.load(os.path.join("resources", "spritesheets", "vampira_spritesheet_01.png"))
+        self.wall_image = pygame.image.load(os.path.join("resources", "spritesheets", "castle_wall_2.png"))
+        self.mob_image = pygame.image.load(os.path.join("resources", "spritesheets", "mob_spritesheet_1.png"))
+
+    def new(self):
         self.display_grid = False
         self.in_turn = True
         self.sprites = pygame.sprite.LayeredUpdates()
         self.walls = pygame.sprite.Group()
         self.mobs = pygame.sprite.Group()
-        self.player_image = pygame.image.load(os.path.join("resources", "spritesheets", "vampira_spritesheet_01.png"))
-        self.wall_image = pygame.image.load(os.path.join("resources", "spritesheets", "castle_wall_2.png"))
-        self.mob_image = pygame.image.load(os.path.join("resources", "spritesheets", "mob_spritesheet_1.png"))
         self.map_array = get_map_by_image(os.path.join("resources", "maps", "map_1.png"))
         for i, row in enumerate(self.map_array):
             for j, col in enumerate(row):
@@ -41,8 +42,9 @@ class Game:
         self.make_graph()
 
     def cleanup(self):
-        pygame.quit()
         pygame.font.quit()
+        pygame.quit()
+        sys.exit()
 
     def is_node(self, coord):
         x, y = coord
@@ -100,7 +102,6 @@ class Game:
         for x in range(0, WIDTH, 32):
             pygame.draw.rect(self.surface, DARK_GRAY, (x, y, TILE_SIZE, TILE_SIZE))
             pygame.draw.rect(self.surface, BLACK, (x, y, TILE_SIZE, TILE_SIZE), 3)
-        #self.game_over_screen()
 
     def loop(self):
         if self.in_turn:
@@ -118,13 +119,13 @@ class Game:
 
     def event(self, event):
         if event.type == QUIT:
-            self.running = False
+            self.cleanup()
         if event.type == KEYDOWN:
             if event.key == K_p:
                 self.display_grid = not self.display_grid
 
     def execute(self):
-        self.init()
+        self.running = True
         while self.running:
             for event in pygame.event.get():
                 self.event(event)
@@ -134,17 +135,33 @@ class Game:
             pygame.display.flip()
             self.clock.tick(FPS)
             pygame.display.set_caption(f"Vampira - FPS: {round(self.clock.get_fps(), 2)}")
-        self.cleanup()
 
     def menu_screen(self):
         pass
 
     def game_over_screen(self):
-        go_surface = pygame.Surface((WIDTH, HEIGHT)).convert_alpha()
-        go_surface.fill((0, 0, 0, 210))
-        font = pygame.font.SysFont('Comic Sans MS', 30)
-        go_text_surface = font.render("Game Over", True, RED)
-        self.surface.blit(go_surface, (0, 0))
-        self.surface.blit(go_text_surface, (WIDTH // 4, 2 * HEIGHT // 5))
-        font = pygame.font.SysFont('Comic Sans MS', 15)
-        self.surface.blit(font.render("Press any key to continue!", True, WHITE), (WIDTH // 5, 2 * HEIGHT // 5 + 40))
+        self.surface.fill(BLACK)
+        self.draw_text("Game Over", RED, WIDTH // 4, 2 * HEIGHT // 5, 30)
+        self.draw_text("Press any key to continue!", WHITE, WIDTH // 5, 2 * HEIGHT // 5 + 40, 15)
+        pygame.display.flip()
+        self.wait_any_key()
+
+    def wait_any_key(self):
+        # reference code: https://github.com/kidscancode/pygame_tutorials/blob/master/tilemap/part%2022/main.py
+        pygame.event.wait()
+        waiting = True
+        while waiting:
+            self.clock.tick(FPS)
+            for event in pygame.event.get():
+                if event.type == QUIT:
+                    waiting = False
+                    self.cleanup()
+                if event.type == KEYUP or event.type == MOUSEBUTTONUP:
+                    waiting = False
+
+    def draw_text(self, text, color, x, y, size, font_name='Comic Sans MS'):
+        font = pygame.font.SysFont(font_name, size)
+        text_surface = font.render(text, True, color)
+        text_rect = text_surface.get_rect()
+        text_rect.topleft = (x, y)
+        self.surface.blit(text_surface, text_rect)
