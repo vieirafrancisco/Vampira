@@ -37,7 +37,14 @@ run the game:
     - [x] Algoritmo de colisão
 
 ### Animation:
-- [ ] Draw player animation
+- [ ] Mudar o desenho dos quadrados verdes de movimentação do player para algo mais intuitivo
+    - [ ] Colocar pegadas brancas no lugar dos espaços verdes (uma ideia)
+    - [ ] Adicionar um desenho de caveira em blocos exatamente atrás dos mobs
+- [ ] Criar um range de visualização dos mobs (sinalizar com quadrados vermelhos com opacidade baixa)
+- [ ] Criar animação do player e dos mobs quando estão parados
+
+### Refactoring:
+- [ ] Replace lists to pygame vectors
 
 ## Sobre o jogo:
 

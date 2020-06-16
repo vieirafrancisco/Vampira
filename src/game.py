@@ -83,8 +83,10 @@ class Game:
         self.paths = get_paths()
 
     def render(self):
+        # draw entity sprites
         self.sprites.draw(self.surface)
         self.mobs.draw(self.surface)
+        # debug grid
         if self.display_grid:
             for i in range(0, CANVAS_WIDTH, TILE_SIZE):
                 pygame.draw.line(self.surface, GRAY, (i, 0), (i, CANVAS_HEIGHT))
@@ -92,11 +94,30 @@ class Game:
                 pygame.draw.line(self.surface, GRAY, (0, j), (CANVAS_WIDTH, j))
         if not self.player.is_moving and self.in_turn:
             dists_gt_zero_and_leq_player_wr = list(filter(lambda x: 0 < x[1] <= self.player.walk_range and self.is_node(x[0]), self.dists.items()))
-            for node, _ in dists_gt_zero_and_leq_player_wr:
-                x, y = node
-                surface = pygame.Surface((TILE_SIZE, TILE_SIZE), pygame.SRCALPHA)
-                surface.fill((0, 255, 0, 75))
-                self.surface.blit(surface, (x * TILE_SIZE, y * TILE_SIZE))
+            for node_position, _ in dists_gt_zero_and_leq_player_wr:
+                x, y = node_position
+                footprint_surface = pygame.image.load(os.path.join("resources", "spritesheets", "seta.png")).convert()
+                footprint_surface.set_colorkey(COLOR_KEY)
+                # rotate footprints sprites
+                prev_pos = self.paths[x, y][-1]
+                footprint_dir = (x - prev_pos[0], y - prev_pos[1])
+                if footprint_dir[0] == 1:
+                    footprint_surface = pygame.transform.rotate(footprint_surface, 90)
+                elif footprint_dir[0] == -1:
+                    footprint_surface = pygame.transform.rotate(footprint_surface, -90)
+                elif footprint_dir[1] == -1:
+                    footprint_surface = pygame.transform.rotate(footprint_surface, 180)
+                px, py = map(lambda coord: coord * TILE_SIZE, node_position)
+                self.surface.blit(footprint_surface, (px, py))
+                mx, my = pygame.mouse.get_pos()
+                if mx >= px and mx < px + TILE_SIZE and my >= py and my < py + TILE_SIZE:
+                    fp_path = self.paths[x, y][1:]
+                    fp_path.append((x, y))
+                    for fp_x, fp_y in fp_path:
+                        green_color_surface = pygame.Surface((TILE_SIZE, TILE_SIZE), SRCALPHA)
+                        green_color_surface.fill((0, 240, 0, 75))
+                        self.surface.blit(green_color_surface, (fp_x * TILE_SIZE, fp_y * TILE_SIZE))
+                    pygame.draw.rect(self.surface, DARK_GREEN, (px, py, TILE_SIZE, TILE_SIZE), 2)
         # HUD - inventory
         y = CANVAS_HEIGHT
         for x in range(0, WIDTH, 32):
