@@ -8,7 +8,7 @@ from settings import *
 from src.sprites.player import Player
 from src.sprites.map_sprites import Wall
 from src.sprites.mob import Mob
-from utils.functions import get_map_by_image, dijkstra, get_two_nodes_distance, memset
+from utils.functions import get_map_by_image, dijkstra, memset, footprint_angle
 
 class Game:
     def __init__(self):
@@ -23,6 +23,8 @@ class Game:
         self.player_image = pygame.image.load(os.path.join("resources", "spritesheets", "vampira_spritesheet_01.png"))
         self.wall_image = pygame.image.load(os.path.join("resources", "spritesheets", "castle_wall_2.png"))
         self.mob_image = pygame.image.load(os.path.join("resources", "spritesheets", "mob_spritesheet_1.png"))
+        self.skull_image = pygame.image.load(os.path.join("resources", "spritesheets", "skull.png")).convert()
+        self.skull_image.set_colorkey(COLOR_KEY)
 
     def new(self):
         self.display_grid = False
@@ -92,23 +94,19 @@ class Game:
                 pygame.draw.line(self.surface, GRAY, (i, 0), (i, CANVAS_HEIGHT))
             for j in range(0, CANVAS_HEIGHT, TILE_SIZE):
                 pygame.draw.line(self.surface, GRAY, (0, j), (CANVAS_WIDTH, j))
+        # movement HUD        
         if not self.player.is_moving and self.in_turn:
             dists_gt_zero_and_leq_player_wr = list(filter(lambda x: 0 < x[1] <= self.player.walk_range and self.is_node(x[0]), self.dists.items()))
             for node_position, _ in dists_gt_zero_and_leq_player_wr:
                 x, y = node_position
                 footprint_surface = pygame.image.load(os.path.join("resources", "spritesheets", "seta.png")).convert()
                 footprint_surface.set_colorkey(COLOR_KEY)
-                # rotate footprints sprites
-                prev_pos = self.paths[x, y][-1]
-                footprint_dir = (x - prev_pos[0], y - prev_pos[1])
-                if footprint_dir[0] == 1:
-                    footprint_surface = pygame.transform.rotate(footprint_surface, 90)
-                elif footprint_dir[0] == -1:
-                    footprint_surface = pygame.transform.rotate(footprint_surface, -90)
-                elif footprint_dir[1] == -1:
-                    footprint_surface = pygame.transform.rotate(footprint_surface, 180)
-                px, py = map(lambda coord: coord * TILE_SIZE, node_position)
-                self.surface.blit(footprint_surface, (px, py))
+                footprint_surface = pygame.transform.rotate(footprint_surface, footprint_angle((x, y), self.paths[x, y]))
+                px, py = map(lambda coord: coord * TILE_SIZE, node_position) # pixel canvas coordenates
+                if any(filter(lambda mob: vec(x, y) + vec(mob.dir) == vec(mob.pos), self.mobs.sprites())):
+                    self.surface.blit(self.skull_image, (px, py))
+                else:
+                    self.surface.blit(footprint_surface, (px, py))
                 mx, my = pygame.mouse.get_pos()
                 if mx >= px and mx < px + TILE_SIZE and my >= py and my < py + TILE_SIZE:
                     fp_path = self.paths[x, y][1:]
@@ -127,6 +125,11 @@ class Game:
     def loop(self):
         if self.in_turn:
             self.sprites.update()
+            for mob in self.mobs.sprites():
+                if vec(self.player.pos) + vec(mob.dir) == vec(mob.pos):
+                    x, y = mob.pos
+                    self.map_array[x][y] = EMPTY
+                    mob.kill()
             self.mobs_turn_state = memset(0, len(self.mobs.sprites()))
         else:
             self.mobs.update()

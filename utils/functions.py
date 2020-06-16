@@ -72,3 +72,22 @@ def dijkstra(p, graph):
 
 def memset(value, size):
     return [value for _ in range(size)]
+
+def footprint_angle(target: tuple, path: list) -> int:
+    """
+        Function that returns the angle of the footprint sprite.
+        The start point of the sprite is in the bottom direction, them the y = 1 it's already taken with 0 rotation.
+        target: tuple with the x and y coordinates of the target node
+        path: a list of tuples (coordenates), that have the path from the player position a mouse clicked node
+        return: a integer (angle)
+    """
+    target_pos = vec(target)
+    prev_pos = vec(path[-1])
+    footprint_dir = target_pos - prev_pos
+    if footprint_dir.x == 1:
+        return 90
+    elif footprint_dir.x == -1:
+        return -90
+    elif footprint_dir.y == -1:
+        return 180
+    return 0

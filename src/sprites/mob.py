@@ -98,5 +98,3 @@ class Mob(pygame.sprite.Sprite):
                 x += d[0]
                 y += d[1]
         return False
- 
-        
