@@ -37,7 +37,7 @@ run the game:
     - [x] Algoritmo de colisão
 - [ ] Criar um timer
 - [ ] Mudar mapas
-    - [ ] Criar porta para o próximo mapa (turno)
+    - [ ] Criar porta para o próximo mapa (fase)
 - [ ] Contador de turnos
 
 ### Animation:
@@ -50,6 +50,7 @@ run the game:
 ### Refactoring:
 - [ ] Replace lists to pygame vectors
 - [ ] Criar classe para controlar os mapas e as entidades
+- [ ] Mudar o algoritmo de dijkstra para o A* pathfiding algorithm e ver como fica
 
 ## Sobre o jogo:
 

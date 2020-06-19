@@ -99,14 +99,11 @@ class Game:
             dists_gt_zero_and_leq_player_wr = list(filter(lambda x: 0 < x[1] <= self.player.walk_range and self.is_node(x[0]), self.dists.items()))
             for node_position, _ in dists_gt_zero_and_leq_player_wr:
                 x, y = node_position
-                footprint_surface = pygame.image.load(os.path.join("resources", "spritesheets", "seta.png")).convert()
-                footprint_surface.set_colorkey(COLOR_KEY)
-                footprint_surface = pygame.transform.rotate(footprint_surface, footprint_angle((x, y), self.paths[x, y]))
                 px, py = map(lambda coord: coord * TILE_SIZE, node_position) # pixel canvas coordenates
                 if any(filter(lambda mob: vec(x, y) + vec(mob.dir) == vec(mob.pos), self.mobs.sprites())):
-                    self.surface.blit(self.skull_image, (px, py))
+                    pygame.draw.rect(self.surface, RED, (px, py, TILE_SIZE, TILE_SIZE), 2)
                 else:
-                    self.surface.blit(footprint_surface, (px, py))
+                    pygame.draw.rect(self.surface, DARK_GREEN, (px, py, TILE_SIZE, TILE_SIZE), 2)
                 mx, my = pygame.mouse.get_pos()
                 if mx >= px and mx < px + TILE_SIZE and my >= py and my < py + TILE_SIZE:
                     fp_path = self.paths[x, y][1:]
@@ -115,7 +112,7 @@ class Game:
                         green_color_surface = pygame.Surface((TILE_SIZE, TILE_SIZE), SRCALPHA)
                         green_color_surface.fill((0, 240, 0, 75))
                         self.surface.blit(green_color_surface, (fp_x * TILE_SIZE, fp_y * TILE_SIZE))
-                    pygame.draw.rect(self.surface, DARK_GREEN, (px, py, TILE_SIZE, TILE_SIZE), 2)
+                    pygame.draw.rect(self.surface, GREEN, (px, py, TILE_SIZE, TILE_SIZE), 2)
         # HUD - inventory
         y = CANVAS_HEIGHT
         for x in range(0, WIDTH, 32):
