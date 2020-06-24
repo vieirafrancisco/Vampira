@@ -7,11 +7,13 @@ import pygame
 from settings import *
 from utils.functions import get_two_nodes_distance
 
+
 def inside_canvas(x, y):
     if x * TILE_SIZE < CANVAS_WIDTH and y * TILE_SIZE < CANVAS_HEIGHT:
         return True
     else:
         return False
+
 
 def get_movement_list(path_list):
     movement_list = []
@@ -19,14 +21,16 @@ def get_movement_list(path_list):
         movement_list.append((b[0] - a[0], b[1] - a[1]))
     return movement_list
 
+
 class Player(pygame.sprite.Sprite):
     def __init__(self, game, x, y):
         self._layer = PLAYER_LAYER
-        self.groups = (game.sprites)
+        self.groups = (game.sprites, game.entities)
         pygame.sprite.Sprite.__init__(self, self.groups)
         self.game = game
         self.image = pygame.Surface((PLAYER_WIDTH, PLAYER_HEIGHT)).convert()
-        self.image.blit(self.game.player_image, (0, 0), (1 * PLAYER_WIDTH, 0 * PLAYER_HEIGHT, PLAYER_WIDTH, PLAYER_HEIGHT))
+        self.image.blit(self.game.player_image, (0, 0),
+                        (1 * PLAYER_WIDTH, 0 * PLAYER_HEIGHT, PLAYER_WIDTH, PLAYER_HEIGHT))
         self.image.set_colorkey(COLOR_KEY)
         self.rect = self.image.get_rect()
         self.rect.topleft = (x * PLAYER_WIDTH, y * PLAYER_HEIGHT)

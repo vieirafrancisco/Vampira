@@ -1,14 +1,18 @@
+import os
 import heapq
 
 import pygame
 
 from settings import *
 
+
 def euclidian_distance(a, b):
     def func(pos):
         x, y = pos
         return (x - y) ** 2
+
     return sum(map(func, zip(a, b)))
+
 
 def similarity(color):
     color_tuple = (color.r, color.g, color.b)
@@ -21,13 +25,13 @@ def similarity(color):
             res = global_color
     return res
 
-def get_map_by_image(image_path):
-    img = pygame.image.load(image_path)
-    w, h = img.get_size()
+
+def get_map_by_image(map_image):
+    w, h = map_image.get_size()
     map_array = [[EMPTY for i in range(h)] for j in range(w)]
     for i in range(w):
         for j in range(h):
-            image_color = img.get_at((i, j))
+            image_color = map_image.get_at((i, j))
             similar_color = similarity(image_color)
             if similar_color == BROWN:
                 map_array[i][j] = WALL
@@ -35,7 +39,10 @@ def get_map_by_image(image_path):
                 map_array[i][j] = PLAYER
             elif similar_color == GREEN:
                 map_array[i][j] = MOB
+            elif similar_color == RED:
+                map_array[i][j] = STAIRS
     return map_array
+
 
 def get_two_nodes_distance(n1: tuple, n2: tuple) -> int:
     """
@@ -46,6 +53,7 @@ def get_two_nodes_distance(n1: tuple, n2: tuple) -> int:
     dx = abs(n2[0] - n1[0])
     dy = abs(n2[1] - n1[1])
     return sum([dx, dy])
+
 
 def dijkstra(p, graph):
     """
@@ -60,7 +68,7 @@ def dijkstra(p, graph):
     dist[p] = 0
     p_queue = []
     heapq.heappush(p_queue, (0, p))
-    while p_queue != []:
+    while p_queue:
         u = heapq.heappop(p_queue)
         visited[u[1]] = True
         for v in graph[u[1]]:
@@ -68,10 +76,23 @@ def dijkstra(p, graph):
                 dist[v[1]] = u[0] + v[0]
                 origin[v[1]] = u[1]
                 heapq.heappush(p_queue, (dist[v[1]], v[1]))
-    return dist, origin
+
+    def get_paths():
+        paths = {key: [] for key in origin.keys()}
+        for node in origin.keys():
+            value = origin[node]
+            while value != -1:
+                paths[node].append(value)
+                value = origin[value]
+            paths[node].reverse()
+        return paths
+
+    return dist, get_paths()
+
 
 def memset(value, size):
     return [value for _ in range(size)]
+
 
 def footprint_angle(target: tuple, path: list) -> int:
     """
@@ -91,3 +112,7 @@ def footprint_angle(target: tuple, path: list) -> int:
     elif footprint_dir.y == -1:
         return 180
     return 0
+
+
+def load_image(file_name: str, folder="spritesheets"):
+    return pygame.image.load(os.path.join(RESOURCE_PATHS[folder], file_name))

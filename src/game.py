@@ -6,9 +6,10 @@ from pygame.locals import *
 
 from settings import *
 from src.sprites.player import Player
-from src.sprites.map_sprites import Wall
+from src.sprites.map_sprites import Wall, Endpoint
 from src.sprites.mob import Mob
-from utils.functions import get_map_by_image, dijkstra, memset, footprint_angle
+from utils.functions import get_map_by_image, dijkstra, memset, load_image
+
 
 class Game:
     def __init__(self):
@@ -17,22 +18,26 @@ class Game:
         self.running = False
         self.surface = pygame.display.set_mode((WIDTH, HEIGHT))
         self.clock = pygame.time.Clock()
+        self.map_count = 0
         self.load_data()
 
     def load_data(self):
-        self.player_image = pygame.image.load(os.path.join("resources", "spritesheets", "vampira_spritesheet_01.png"))
-        self.wall_image = pygame.image.load(os.path.join("resources", "spritesheets", "castle_wall_2.png"))
-        self.mob_image = pygame.image.load(os.path.join("resources", "spritesheets", "mob_spritesheet_1.png"))
-        self.skull_image = pygame.image.load(os.path.join("resources", "spritesheets", "skull.png")).convert()
-        self.skull_image.set_colorkey(COLOR_KEY)
+        self.player_image = load_image("vampira_spritesheet_01.png")
+        self.wall_image = load_image("castle_wall_2.png")
+        self.mob_image = load_image("mob_spritesheet_1.png")
+        self.stairs_image = load_image("stairs.png")
+        self.map_image = load_image(f"map_{self.map_count % MAX_MAPS}.png", "maps")
 
     def new(self):
         self.display_grid = False
         self.in_turn = True
+        self.turn = 0
         self.sprites = pygame.sprite.LayeredUpdates()
         self.walls = pygame.sprite.Group()
         self.mobs = pygame.sprite.Group()
-        self.map_array = get_map_by_image(os.path.join("resources", "maps", "map_1.png"))
+        self.items = pygame.sprite.Group()
+        self.entities = pygame.sprite.Group()
+        self.map_array = get_map_by_image(self.map_image)
         for i, row in enumerate(self.map_array):
             for j, col in enumerate(row):
                 if self.map_array[i][j] == WALL:
@@ -41,6 +46,8 @@ class Game:
                     Mob(self, i, j)
                 elif self.map_array[i][j] == PLAYER:
                     self.player = Player(self, i, j)
+                elif self.map_array[i][j] == STAIRS:
+                    Endpoint(self, i, j)
         self.make_graph()
 
     def cleanup(self):
@@ -48,13 +55,18 @@ class Game:
         pygame.quit()
         sys.exit()
 
+    def change_map(self):
+        self.map_count = (self.map_count + 1) % MAX_MAPS
+        self.map_image = load_image(f"map_{self.map_count % MAX_MAPS}.png", "maps")
+        self.new()
+
     def is_node(self, coord):
         x, y = coord
         if self.map_array[x][y] not in NOT_NODES:
             return True
         else:
             return False
-    
+
     def swap_entity_position(self, pos_a, pos_b):
         xa, ya = pos_a
         xb, yb = pos_b
@@ -64,25 +76,17 @@ class Game:
         self.graph = {}
         h = len(self.map_array)
         w = len(self.map_array[0])
+
         def func(pos):
             x, y = pos
-            return x >= 0 and x < h and y >= 0 and y < w and self.is_node((x, y))
+            return 0 <= x < h and 0 <= y < w and self.is_node((x, y))
+
         for i in range(h):
             for j in range(w):
                 if self.is_node((i, j)):
-                    values = map(lambda x: (1, x), filter(func, [(i, j-1), (i+1, j), (i, j+1), (i-1,j)]))
+                    values = map(lambda x: (1, x), filter(func, [(i, j - 1), (i + 1, j), (i, j + 1), (i - 1, j)]))
                     self.graph[(i, j)] = list(values)
-        self.dists, self.origins = dijkstra(self.player.pos, self.graph)
-        def get_paths():
-            paths = {key: [] for key in self.origins.keys()}
-            for node in self.origins.keys():
-                value = self.origins[node]
-                while value != -1:
-                    paths[node].append(value)
-                    value = self.origins[value]
-                paths[node].reverse()
-            return paths
-        self.paths = get_paths()
+        self.dists, self.paths = dijkstra(self.player.pos, self.graph)
 
     def render(self):
         # draw entity sprites
@@ -96,16 +100,17 @@ class Game:
                 pygame.draw.line(self.surface, GRAY, (0, j), (CANVAS_WIDTH, j))
         # movement HUD        
         if not self.player.is_moving and self.in_turn:
-            dists_gt_zero_and_leq_player_wr = list(filter(lambda x: 0 < x[1] <= self.player.walk_range and self.is_node(x[0]), self.dists.items()))
+            dists_gt_zero_and_leq_player_wr = list(
+                filter(lambda x: 0 < x[1] <= self.player.walk_range and self.is_node(x[0]), self.dists.items()))
             for node_position, _ in dists_gt_zero_and_leq_player_wr:
                 x, y = node_position
-                px, py = map(lambda coord: coord * TILE_SIZE, node_position) # pixel canvas coordenates
+                px, py = map(lambda coord: coord * TILE_SIZE, node_position)  # pixel canvas coordenates
                 if any(filter(lambda mob: vec(x, y) + vec(mob.dir) == vec(mob.pos), self.mobs.sprites())):
                     pygame.draw.rect(self.surface, RED, (px, py, TILE_SIZE, TILE_SIZE), 2)
                 else:
                     pygame.draw.rect(self.surface, DARK_GREEN, (px, py, TILE_SIZE, TILE_SIZE), 2)
                 mx, my = pygame.mouse.get_pos()
-                if mx >= px and mx < px + TILE_SIZE and my >= py and my < py + TILE_SIZE:
+                if px <= mx < px + TILE_SIZE and py <= my < py + TILE_SIZE:
                     fp_path = self.paths[x, y][1:]
                     fp_path.append((x, y))
                     for fp_x, fp_y in fp_path:
@@ -118,6 +123,9 @@ class Game:
         for x in range(0, WIDTH, 32):
             pygame.draw.rect(self.surface, DARK_GRAY, (x, y, TILE_SIZE, TILE_SIZE))
             pygame.draw.rect(self.surface, BLACK, (x, y, TILE_SIZE, TILE_SIZE), 3)
+        # Information text
+        self.draw_text(f"Map: {self.map_count}", WHITE, 10, 0, 18)
+        self.draw_text(f"Turn: {self.turn}", WHITE, 10, 30, 18)
 
     def loop(self):
         if self.in_turn:
@@ -135,6 +143,7 @@ class Game:
                     self.mobs_turn_state[idx] = 1
             if all(self.mobs_turn_state):
                 self.in_turn = True
+                self.turn += 1
                 self.make_graph()
                 self.mobs_turn_state = memset(0, len(self.mobs.sprites()))
 

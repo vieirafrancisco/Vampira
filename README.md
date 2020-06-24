@@ -35,10 +35,10 @@ run the game:
     - [x] Codar algoritmo de movimentação (implementar dijkstra)
 - [x] Adicionar sprite de paredes
     - [x] Algoritmo de colisão
+- [x] Mudar mapas
+    - [x] Criar porta para o próximo mapa (fase)
+- [x] Contador de turnos
 - [ ] Criar um timer
-- [ ] Mudar mapas
-    - [ ] Criar porta para o próximo mapa (fase)
-- [ ] Contador de turnos
 
 ### Animation:
 - [x] Mudar o desenho dos quadrados verdes de movimentação do player para algo mais intuitivo
@@ -48,9 +48,11 @@ run the game:
 - [ ] Criar animação do player e dos mobs quando estão parados
 
 ### Refactoring:
+- [ ] Adicionar uma movimetação para os mobs
 - [ ] Replace lists to pygame vectors
 - [ ] Criar classe para controlar os mapas e as entidades
 - [ ] Mudar o algoritmo de dijkstra para o A* pathfiding algorithm e ver como fica
+- [ ] Refatorar a função loop da classe Game, porque para atualizar o player está atualizando todas as outras sprites
 
 ## Sobre o jogo:
 
