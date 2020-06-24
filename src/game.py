@@ -73,7 +73,7 @@ class Game:
         self.map_array[xa][ya], self.map_array[xb][yb] = self.map_array[xb][yb], self.map_array[xa][ya]
 
     def make_graph(self):
-        self.graph = {}
+        graph = {}
         h = len(self.map_array)
         w = len(self.map_array[0])
 
@@ -85,8 +85,9 @@ class Game:
             for j in range(w):
                 if self.is_node((i, j)):
                     values = map(lambda x: (1, x), filter(func, [(i, j - 1), (i + 1, j), (i, j + 1), (i - 1, j)]))
-                    self.graph[(i, j)] = list(values)
-        self.dists, self.paths = dijkstra(self.player.pos, self.graph)
+                    graph[(i, j)] = list(values)
+        # calculate dijkstra to each entity sprite
+        self.entities_dijkstra = {entity: dijkstra(entity.pos, graph) for entity in self.entities.sprites()}
 
     def render(self):
         # draw entity sprites
@@ -100,24 +101,40 @@ class Game:
                 pygame.draw.line(self.surface, GRAY, (0, j), (CANVAS_WIDTH, j))
         # movement HUD        
         if not self.player.is_moving and self.in_turn:
-            dists_gt_zero_and_leq_player_wr = list(
-                filter(lambda x: 0 < x[1] <= self.player.walk_range and self.is_node(x[0]), self.dists.items()))
-            for node_position, _ in dists_gt_zero_and_leq_player_wr:
-                x, y = node_position
-                px, py = map(lambda coord: coord * TILE_SIZE, node_position)  # pixel canvas coordenates
-                if any(filter(lambda mob: vec(x, y) + vec(mob.dir) == vec(mob.pos), self.mobs.sprites())):
-                    pygame.draw.rect(self.surface, RED, (px, py, TILE_SIZE, TILE_SIZE), 2)
-                else:
-                    pygame.draw.rect(self.surface, DARK_GREEN, (px, py, TILE_SIZE, TILE_SIZE), 2)
-                mx, my = pygame.mouse.get_pos()
-                if px <= mx < px + TILE_SIZE and py <= my < py + TILE_SIZE:
-                    fp_path = self.paths[x, y][1:]
-                    fp_path.append((x, y))
-                    for fp_x, fp_y in fp_path:
-                        green_color_surface = pygame.Surface((TILE_SIZE, TILE_SIZE), SRCALPHA)
-                        green_color_surface.fill((0, 240, 0, 75))
-                        self.surface.blit(green_color_surface, (fp_x * TILE_SIZE, fp_y * TILE_SIZE))
-                    pygame.draw.rect(self.surface, GREEN, (px, py, TILE_SIZE, TILE_SIZE), 2)
+            for entity in self.entities.sprites():
+                dists, paths = self.entities_dijkstra[entity]
+                dists_gt_zero_and_leq_entity_vr = list(
+                    filter(lambda dist: 0 < dist[1] <= entity.vision_range and self.is_node(dist[0]),
+                           dists.items()))
+                for (x, y), _ in dists_gt_zero_and_leq_entity_vr:
+                    px, py = map(lambda coord: coord * TILE_SIZE, (x, y))  # pixel canvas coordinates
+                    if isinstance(entity, Player):
+                        if any(filter(lambda mob: vec(x, y) + vec(mob.dir) == vec(mob.pos), self.mobs.sprites())):
+                            pygame.draw.rect(self.surface, RED, (px, py, TILE_SIZE, TILE_SIZE), 2)
+                        else:
+                            pygame.draw.rect(self.surface, DARK_GREEN, (px, py, TILE_SIZE, TILE_SIZE), 2)
+                        mx, my = pygame.mouse.get_pos()
+                        if px <= mx < px + TILE_SIZE and py <= my < py + TILE_SIZE:
+                            fp_path = paths[x, y][1:]
+                            fp_path.append((x, y))
+                            for fp_x, fp_y in fp_path:
+                                green_color_surface = pygame.Surface((TILE_SIZE, TILE_SIZE), SRCALPHA)
+                                green_color_surface.fill((0, 240, 0, 75))
+                                self.surface.blit(green_color_surface, (fp_x * TILE_SIZE, fp_y * TILE_SIZE))
+                            pygame.draw.rect(self.surface, GREEN, (px, py, TILE_SIZE, TILE_SIZE), 2)
+                    else:
+                        direction = entity.dir
+                        can_see = any([
+                            direction[0] == 1 and x >= entity.pos[0],
+                            direction[0] == -1 and x <= entity.pos[0],
+                            direction[1] == 1 and y >= entity.pos[1],
+                            direction[1] == -1 and y <= entity.pos[1]
+                        ])
+                        if can_see:
+                            red_color_surface = pygame.Surface((TILE_SIZE, TILE_SIZE), SRCALPHA)
+                            red_color_surface.fill((240, 0, 0, 75))
+                            self.surface.blit(red_color_surface, (px, py))
+                            pygame.draw.rect(self.surface, DARK_RED, (px, py, TILE_SIZE, TILE_SIZE), 2)
         # HUD - inventory
         y = CANVAS_HEIGHT
         for x in range(0, WIDTH, 32):

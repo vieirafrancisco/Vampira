@@ -18,9 +18,10 @@ class Mob(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.topleft = (x * TILE_SIZE, y * TILE_SIZE)
         self.pos = (x, y)
+        self.vision_range = MOB_VISION_RANGE
         self.is_moving = False
         self.target_node = (0, 0)
-        self.dir = (1, 0)
+        self.dir = (0, 1)
         self.possible_directions = []
         self.last_update = pygame.time.get_ticks()
         self.animation_count = 0
@@ -55,12 +56,12 @@ class Mob(pygame.sprite.Sprite):
 
     def update(self):
         if not self.is_moving:
-            def is_node(x, y):
+            def can_move(x, y):
                 return self.game.is_node((x, y)) and (x, y) != self.game.player.pos
 
             self.possible_directions = list(
-                filter(lambda p: is_node(p[0] + self.pos[0], p[1] + self.pos[1]), DIRECTIONS))
-            if self.possible_directions != []:
+                filter(lambda p: can_move(p[0] + self.pos[0], p[1] + self.pos[1]), DIRECTIONS))
+            if self.possible_directions:
                 self.dir = random.choice(self.possible_directions)
                 self.is_moving = True
                 self.target_node = (self.pos[0] + self.dir[0], self.pos[1] + self.dir[1])

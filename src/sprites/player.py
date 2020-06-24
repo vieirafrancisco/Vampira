@@ -35,7 +35,7 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.topleft = (x * PLAYER_WIDTH, y * PLAYER_HEIGHT)
         self.pos = (x, y)
-        self.walk_range = PLAYER_WALK_RANGE
+        self.vision_range = PLAYER_WALK_RANGE
         self.load_images()
         self.movement_list = []
         self.is_moving = False
@@ -43,6 +43,10 @@ class Player(pygame.sprite.Sprite):
         self.curr_node = (0, 0)
         self.last_update = pygame.time.get_ticks()
         self.animation_count = 0
+
+    def set_position(self, x, y):
+        self.pos = (x, y)
+        self.rect.topleft = (x * PLAYER_WIDTH, y * PLAYER_HEIGHT)
 
     def load_images(self):
         self.images = {}
@@ -72,15 +76,17 @@ class Player(pygame.sprite.Sprite):
                 self.animation_count = (self.animation_count + 1) % 2
 
     def update(self):
+        dists, paths = self.game.entities_dijkstra[self]
         mouse_click = pygame.mouse.get_pressed()[0]
         if mouse_click:
             mouse_pos = pygame.mouse.get_pos()
             x = math.floor(mouse_pos[0] / TILE_SIZE)
             y = math.floor(mouse_pos[1] / TILE_SIZE)
             if inside_canvas(x, y) and self.game.map_array[x][y] not in NOT_NODES:
-                d = self.game.dists[(x, y)]
-                if 0 < d <= self.walk_range and not self.is_moving:
-                    path_list = self.game.paths[x, y].copy()
+
+                d = dists[(x, y)]
+                if 0 < d <= self.vision_range and not self.is_moving:
+                    path_list = paths[x, y].copy()
                     path_list.append((x, y))
                     self.movement_list = get_movement_list(path_list)
                     self.target_node = (x, y)
@@ -95,7 +101,7 @@ class Player(pygame.sprite.Sprite):
                 self.game.swap_entity_position(self.pos, self.target_node)
                 self.pos = self.target_node
                 x, y = self.pos
-                last_node = self.game.paths[x, y][-1]
+                last_node = paths[x, y][-1]
                 self.game.make_graph()
                 if x - last_node[0] == 1:
                     self.image = self.images["right_stand"]

@@ -44,15 +44,18 @@ run the game:
 - [x] Mudar o desenho dos quadrados verdes de movimentação do player para algo mais intuitivo
     - [x] Colocar pegadas brancas no lugar dos espaços verdes (uma ideia)
     - [x] Adicionar um desenho de caveira em blocos exatamente atrás dos mobs
-- [ ] Criar um range de visualização dos mobs (sinalizar com quadrados vermelhos com opacidade baixa)
+- [x] Criar um range de visualização dos mobs (sinalizar com quadrados vermelhos com opacidade baixa)
 - [ ] Criar animação do player e dos mobs quando estão parados
 
 ### Refactoring:
-- [ ] Adicionar uma movimetação para os mobs
 - [ ] Replace lists to pygame vectors
 - [ ] Criar classe para controlar os mapas e as entidades
 - [ ] Mudar o algoritmo de dijkstra para o A* pathfiding algorithm e ver como fica
 - [ ] Refatorar a função loop da classe Game, porque para atualizar o player está atualizando todas as outras sprites
+- [ ] (**) Resolver bug de mudança de mapas
+- [ ] (**) Resolver colisão do player com os mobs e dos mobs para o player
+
+(**) Importantes!
 
 ## Sobre o jogo:
 
