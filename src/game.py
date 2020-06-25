@@ -44,10 +44,10 @@ class Game:
                     Wall(self, i, j)
                 elif self.map_array[i][j] == MOB:
                     Mob(self, i, j)
-                elif self.map_array[i][j] == PLAYER:
-                    self.player = Player(self, i, j)
                 elif self.map_array[i][j] == STAIRS:
                     Endpoint(self, i, j)
+                elif self.map_array[i][j] == PLAYER:
+                    self.player = Player(self, i, j)
         self.make_graph()
 
     def cleanup(self):
@@ -102,39 +102,12 @@ class Game:
         # movement HUD        
         if not self.player.is_moving and self.in_turn:
             for entity in self.entities.sprites():
-                dists, paths = self.entities_dijkstra[entity]
+                dists= self.entities_dijkstra[entity][0]
                 dists_gt_zero_and_leq_entity_vr = list(
                     filter(lambda dist: 0 < dist[1] <= entity.vision_range and self.is_node(dist[0]),
                            dists.items()))
                 for (x, y), _ in dists_gt_zero_and_leq_entity_vr:
-                    px, py = map(lambda coord: coord * TILE_SIZE, (x, y))  # pixel canvas coordinates
-                    if isinstance(entity, Player):
-                        if any(filter(lambda mob: vec(x, y) + vec(mob.dir) == vec(mob.pos), self.mobs.sprites())):
-                            pygame.draw.rect(self.surface, RED, (px, py, TILE_SIZE, TILE_SIZE), 2)
-                        else:
-                            pygame.draw.rect(self.surface, DARK_GREEN, (px, py, TILE_SIZE, TILE_SIZE), 2)
-                        mx, my = pygame.mouse.get_pos()
-                        if px <= mx < px + TILE_SIZE and py <= my < py + TILE_SIZE:
-                            fp_path = paths[x, y][1:]
-                            fp_path.append((x, y))
-                            for fp_x, fp_y in fp_path:
-                                green_color_surface = pygame.Surface((TILE_SIZE, TILE_SIZE), SRCALPHA)
-                                green_color_surface.fill((0, 240, 0, 75))
-                                self.surface.blit(green_color_surface, (fp_x * TILE_SIZE, fp_y * TILE_SIZE))
-                            pygame.draw.rect(self.surface, GREEN, (px, py, TILE_SIZE, TILE_SIZE), 2)
-                    else:
-                        direction = entity.dir
-                        can_see = any([
-                            direction[0] == 1 and x >= entity.pos[0],
-                            direction[0] == -1 and x <= entity.pos[0],
-                            direction[1] == 1 and y >= entity.pos[1],
-                            direction[1] == -1 and y <= entity.pos[1]
-                        ])
-                        if can_see:
-                            red_color_surface = pygame.Surface((TILE_SIZE, TILE_SIZE), SRCALPHA)
-                            red_color_surface.fill((240, 0, 0, 75))
-                            self.surface.blit(red_color_surface, (px, py))
-                            pygame.draw.rect(self.surface, DARK_RED, (px, py, TILE_SIZE, TILE_SIZE), 2)
+                    entity.draw_vision(x, y)
         # HUD - inventory
         y = CANVAS_HEIGHT
         for x in range(0, WIDTH, 32):
@@ -154,6 +127,11 @@ class Game:
                     mob.kill()
             self.mobs_turn_state = memset(0, len(self.mobs.sprites()))
         else:
+            for mob in self.mobs.sprites():
+                for p in self.player.path_list:
+                    if mob.has_vision_in_position(*p):
+                        self.running = False
+                        break
             self.mobs.update()
             for idx, mob in enumerate(self.mobs.sprites()):
                 if not mob.is_moving:
@@ -163,6 +141,9 @@ class Game:
                 self.turn += 1
                 self.make_graph()
                 self.mobs_turn_state = memset(0, len(self.mobs.sprites()))
+                for mob in self.mobs.sprites():
+                    if mob.has_vision_in_position(*self.player.pos):
+                        self.running = False
 
     def event(self, event):
         if event.type == QUIT:

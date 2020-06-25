@@ -52,8 +52,8 @@ run the game:
 - [ ] Criar classe para controlar os mapas e as entidades
 - [ ] Mudar o algoritmo de dijkstra para o A* pathfiding algorithm e ver como fica
 - [ ] Refatorar a função loop da classe Game, porque para atualizar o player está atualizando todas as outras sprites
-- [ ] (**) Resolver bug de mudança de mapas
-- [ ] (**) Resolver colisão do player com os mobs e dos mobs para o player
+- [x] (**) Resolver bug de mudança de mapas
+- [x] (**) Resolver colisão do player com os mobs e dos mobs para o player
 
 (**) Importantes!
 

@@ -35,3 +35,4 @@ class Endpoint(Item):
     def update(self):
         if self.pos == self.game.player.pos:
             self.game.change_map()
+            return True

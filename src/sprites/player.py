@@ -3,6 +3,7 @@ import math
 import json
 
 import pygame
+from pygame.locals import *
 
 from settings import *
 from utils.functions import get_two_nodes_distance
@@ -37,6 +38,7 @@ class Player(pygame.sprite.Sprite):
         self.pos = (x, y)
         self.vision_range = PLAYER_WALK_RANGE
         self.load_images()
+        self.path_list = []
         self.movement_list = []
         self.is_moving = False
         self.target_node = (0, 0)
@@ -59,6 +61,23 @@ class Player(pygame.sprite.Sprite):
             self.images[image_name].blit(spritesheet, (0, 0), (pos[0] * size[0], pos[1] * size[1], size[0], size[1]))
             self.images[image_name].set_colorkey(COLOR_KEY)
 
+    def draw_vision(self, x, y):
+        paths = self.game.entities_dijkstra[self][1]
+        px, py = map(lambda coord: coord * TILE_SIZE, (x, y))
+        if any(filter(lambda mob: vec(x, y) + vec(mob.dir) == vec(mob.pos), self.game.mobs.sprites())):
+            pygame.draw.rect(self.game.surface, RED, (px, py, TILE_SIZE, TILE_SIZE), 2)
+        else:
+            pygame.draw.rect(self.game.surface, DARK_GREEN, (px, py, TILE_SIZE, TILE_SIZE), 2)
+        mx, my = pygame.mouse.get_pos()
+        if px <= mx < px + TILE_SIZE and py <= my < py + TILE_SIZE:
+            fp_path = paths[x, y][1:]  # footprint path
+            fp_path.append((x, y))
+            for fp_x, fp_y in fp_path:
+                green_color_surface = pygame.Surface((TILE_SIZE, TILE_SIZE), SRCALPHA)
+                green_color_surface.fill((0, 240, 0, 75))
+                self.game.surface.blit(green_color_surface, (fp_x * TILE_SIZE, fp_y * TILE_SIZE))
+            pygame.draw.rect(self.game.surface, GREEN, (px, py, TILE_SIZE, TILE_SIZE), 2)
+
     def animate(self):
         now = pygame.time.get_ticks()
         if now - self.last_update >= 150:
@@ -76,6 +95,8 @@ class Player(pygame.sprite.Sprite):
                 self.animation_count = (self.animation_count + 1) % 2
 
     def update(self):
+        if self not in self.game.entities_dijkstra.keys():
+            return
         dists, paths = self.game.entities_dijkstra[self]
         mouse_click = pygame.mouse.get_pressed()[0]
         if mouse_click:
@@ -83,12 +104,11 @@ class Player(pygame.sprite.Sprite):
             x = math.floor(mouse_pos[0] / TILE_SIZE)
             y = math.floor(mouse_pos[1] / TILE_SIZE)
             if inside_canvas(x, y) and self.game.map_array[x][y] not in NOT_NODES:
-
                 d = dists[(x, y)]
                 if 0 < d <= self.vision_range and not self.is_moving:
-                    path_list = paths[x, y].copy()
-                    path_list.append((x, y))
-                    self.movement_list = get_movement_list(path_list)
+                    self.path_list = paths[x, y].copy()
+                    self.path_list.append((x, y))
+                    self.movement_list = get_movement_list(self.path_list)
                     self.target_node = (x, y)
                     self.is_moving = True
         if self.is_moving:

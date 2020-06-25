@@ -3,6 +3,7 @@ import random
 import json
 
 import pygame
+from pygame.locals import *
 
 from settings import *
 
@@ -81,9 +82,24 @@ class Mob(pygame.sprite.Sprite):
                     self.image = self.images["down_stand"]
                 elif self.dir[1] == -1:
                     self.image = self.images["up_stand"]
-                if self.has_player():
-                    self.game.running = False
         self.animate()
 
-    def has_player(self):
-        pass
+    def can_see(self, x, y):
+        return any([
+            self.dir[0] == 1 and x >= self.pos[0],
+            self.dir[0] == -1 and x <= self.pos[0],
+            self.dir[1] == 1 and y >= self.pos[1],
+            self.dir[1] == -1 and y <= self.pos[1]
+        ])
+
+    def has_vision_in_position(self, x, y):
+        dist = self.game.entities_dijkstra[self][0]
+        return dist[x, y] <= self.vision_range and self.can_see(x, y)
+
+    def draw_vision(self, x, y):
+        px, py = map(lambda coord: coord * TILE_SIZE, (x, y))
+        if self.can_see(x, y):
+            red_color_surface = pygame.Surface((TILE_SIZE, TILE_SIZE), SRCALPHA)
+            red_color_surface.fill((240, 0, 0, 75))
+            self.game.surface.blit(red_color_surface, (px, py))
+            pygame.draw.rect(self.game.surface, DARK_RED, (px, py, TILE_SIZE, TILE_SIZE), 2)
