@@ -8,6 +8,7 @@ from settings import *
 from src.sprites.player import Player
 from src.sprites.map_sprites import Wall, Endpoint
 from src.sprites.mob import Mob
+from src.map.map import Map
 from utils.functions import get_map_by_image, dijkstra, memset, load_image
 
 
@@ -20,13 +21,14 @@ class Game:
         self.clock = pygame.time.Clock()
         self.map_count = 0
         self.load_data()
+        self.player = None
+        self.map = Map.create_map(self)
 
     def load_data(self):
         self.player_image = load_image("vampira_spritesheet_01.png")
         self.wall_image = load_image("castle_wall_2.png")
         self.mob_image = load_image("mob_spritesheet_1.png")
         self.stairs_image = load_image("stairs.png")
-        self.map_image = load_image(f"map_{self.map_count % MAX_MAPS}.png", "maps")
 
     def new(self):
         self.display_grid = False
@@ -37,57 +39,24 @@ class Game:
         self.mobs = pygame.sprite.Group()
         self.items = pygame.sprite.Group()
         self.entities = pygame.sprite.Group()
-        self.map_array = get_map_by_image(self.map_image)
-        for i, row in enumerate(self.map_array):
+        self.map.update_data()
+        for i, row in enumerate(self.map.data):
             for j, col in enumerate(row):
-                if self.map_array[i][j] == WALL:
+                if self.map.data[i][j] == WALL:
                     Wall(self, i, j)
-                elif self.map_array[i][j] == MOB:
+                elif self.map.data[i][j] == MOB:
                     Mob(self, i, j)
-                elif self.map_array[i][j] == STAIRS:
+                elif self.map.data[i][j] == STAIRS:
                     Endpoint(self, i, j)
-                elif self.map_array[i][j] == PLAYER:
+                elif self.map.data[i][j] == PLAYER:
                     self.player = Player(self, i, j)
-        self.make_graph()
+        self.map.update()
 
     def cleanup(self):
         pygame.font.quit()
         pygame.quit()
         sys.exit()
 
-    def change_map(self):
-        self.map_count = (self.map_count + 1) % MAX_MAPS
-        self.map_image = load_image(f"map_{self.map_count % MAX_MAPS}.png", "maps")
-        self.new()
-
-    def is_node(self, coord):
-        x, y = coord
-        if self.map_array[x][y] not in NOT_NODES:
-            return True
-        else:
-            return False
-
-    def swap_entity_position(self, pos_a, pos_b):
-        xa, ya = pos_a
-        xb, yb = pos_b
-        self.map_array[xa][ya], self.map_array[xb][yb] = self.map_array[xb][yb], self.map_array[xa][ya]
-
-    def make_graph(self):
-        graph = {}
-        h = len(self.map_array)
-        w = len(self.map_array[0])
-
-        def func(pos):
-            x, y = pos
-            return 0 <= x < h and 0 <= y < w and self.is_node((x, y))
-
-        for i in range(h):
-            for j in range(w):
-                if self.is_node((i, j)):
-                    values = map(lambda x: (1, x), filter(func, [(i, j - 1), (i + 1, j), (i, j + 1), (i - 1, j)]))
-                    graph[(i, j)] = list(values)
-        # calculate dijkstra to each entity sprite
-        self.entities_dijkstra = {entity: dijkstra(entity.pos, graph) for entity in self.entities.sprites()}
 
     def render(self):
         # draw entity sprites
@@ -102,9 +71,9 @@ class Game:
         # movement HUD        
         if not self.player.is_moving and self.in_turn:
             for entity in self.entities.sprites():
-                dists= self.entities_dijkstra[entity][0]
+                dists = self.map.entities_path_find[entity][0]
                 dists_gt_zero_and_leq_entity_vr = list(
-                    filter(lambda dist: 0 < dist[1] <= entity.vision_range and self.is_node(dist[0]),
+                    filter(lambda dist: 0 < dist[1] <= entity.vision_range and self.map.is_node(*dist[0]),
                            dists.items()))
                 for (x, y), _ in dists_gt_zero_and_leq_entity_vr:
                     entity.draw_vision(x, y)
@@ -114,7 +83,7 @@ class Game:
             pygame.draw.rect(self.surface, DARK_GRAY, (x, y, TILE_SIZE, TILE_SIZE))
             pygame.draw.rect(self.surface, BLACK, (x, y, TILE_SIZE, TILE_SIZE), 3)
         # Information text
-        self.draw_text(f"Map: {self.map_count}", WHITE, 10, 0, 18)
+        self.draw_text(f"Map: {self.map.curr_map}", WHITE, 10, 0, 18)
         self.draw_text(f"Turn: {self.turn}", WHITE, 10, 30, 18)
 
     def loop(self):
@@ -123,7 +92,7 @@ class Game:
             for mob in self.mobs.sprites():
                 if vec(self.player.pos) + vec(mob.dir) == vec(mob.pos):
                     x, y = mob.pos
-                    self.map_array[x][y] = EMPTY
+                    self.map.data[x][y] = EMPTY
                     mob.kill()
             self.mobs_turn_state = memset(0, len(self.mobs.sprites()))
         else:
@@ -139,7 +108,7 @@ class Game:
             if all(self.mobs_turn_state):
                 self.in_turn = True
                 self.turn += 1
-                self.make_graph()
+                self.map.update()
                 self.mobs_turn_state = memset(0, len(self.mobs.sprites()))
                 for mob in self.mobs.sprites():
                     if mob.has_vision_in_position(*self.player.pos):

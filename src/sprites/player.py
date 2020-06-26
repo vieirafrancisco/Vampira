@@ -6,7 +6,6 @@ import pygame
 from pygame.locals import *
 
 from settings import *
-from utils.functions import get_two_nodes_distance
 
 
 def inside_canvas(x, y):
@@ -62,7 +61,7 @@ class Player(pygame.sprite.Sprite):
             self.images[image_name].set_colorkey(COLOR_KEY)
 
     def draw_vision(self, x, y):
-        paths = self.game.entities_dijkstra[self][1]
+        paths = self.game.map.entities_path_find[self][1]
         px, py = map(lambda coord: coord * TILE_SIZE, (x, y))
         if any(filter(lambda mob: vec(x, y) + vec(mob.dir) == vec(mob.pos), self.game.mobs.sprites())):
             pygame.draw.rect(self.game.surface, RED, (px, py, TILE_SIZE, TILE_SIZE), 2)
@@ -95,15 +94,15 @@ class Player(pygame.sprite.Sprite):
                 self.animation_count = (self.animation_count + 1) % 2
 
     def update(self):
-        if self not in self.game.entities_dijkstra.keys():
+        if self not in self.game.map.entities_path_find.keys():
             return
-        dists, paths = self.game.entities_dijkstra[self]
+        dists, paths = self.game.map.entities_path_find[self]
         mouse_click = pygame.mouse.get_pressed()[0]
         if mouse_click:
             mouse_pos = pygame.mouse.get_pos()
             x = math.floor(mouse_pos[0] / TILE_SIZE)
             y = math.floor(mouse_pos[1] / TILE_SIZE)
-            if inside_canvas(x, y) and self.game.map_array[x][y] not in NOT_NODES:
+            if inside_canvas(x, y) and self.game.map.data[x][y] not in NOT_NODES:
                 d = dists[(x, y)]
                 if 0 < d <= self.vision_range and not self.is_moving:
                     self.path_list = paths[x, y].copy()
@@ -118,11 +117,11 @@ class Player(pygame.sprite.Sprite):
             if (self.rect.x / TILE_SIZE, self.rect.y / TILE_SIZE) == self.target_node:
                 self.is_moving = False
                 self.curr_node = (0, 0)
-                self.game.swap_entity_position(self.pos, self.target_node)
+                self.game.map.swap_entity_position(self.pos, self.target_node)
                 self.pos = self.target_node
                 x, y = self.pos
                 last_node = paths[x, y][-1]
-                self.game.make_graph()
+                self.game.map.update()
                 if x - last_node[0] == 1:
                     self.image = self.images["right_stand"]
                 elif x - last_node[0] == -1:

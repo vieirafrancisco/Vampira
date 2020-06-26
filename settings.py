@@ -6,7 +6,6 @@ import pygame
 # game
 TILE_SIZE = 32
 FPS = 60
-MAX_MAPS = 3
 vec = pygame.Vector2
 INF = math.inf
 DIRECTIONS = [(0, 1), (0, -1), (1, 0), (-1, 0)]
@@ -63,3 +62,6 @@ GROUND = 3
 MOB = 4
 STAIRS = 5
 NOT_NODES = [WALL]
+
+# map
+MAPS_FOLDER_PATH = os.path.join("resources", "maps", "blueprints")

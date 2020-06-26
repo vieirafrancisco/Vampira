@@ -44,17 +44,6 @@ def get_map_by_image(map_image):
     return map_array
 
 
-def get_two_nodes_distance(n1: tuple, n2: tuple) -> int:
-    """
-    Function to calculate the distance between two nodes (tiles)
-    n1, n1: tuple(x, y)
-    return: an integer representing the distance between the two nodes
-    """
-    dx = abs(n2[0] - n1[0])
-    dy = abs(n2[1] - n1[1])
-    return sum([dx, dy])
-
-
 def dijkstra(p, graph):
     """
     p: player position
@@ -116,3 +105,7 @@ def footprint_angle(target: tuple, path: list) -> int:
 
 def load_image(file_name: str, folder="spritesheets"):
     return pygame.image.load(os.path.join(RESOURCE_PATHS[folder], file_name))
+
+
+def get_directions(x, y):
+    return list(map(lambda d: (x + d[0], y + d[1]), DIRECTIONS))

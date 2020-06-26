@@ -58,7 +58,7 @@ class Mob(pygame.sprite.Sprite):
     def update(self):
         if not self.is_moving:
             def can_move(x, y):
-                return self.game.is_node((x, y)) and (x, y) != self.game.player.pos
+                return self.game.map.is_node(x, y) and (x, y) != self.game.player.pos
 
             self.possible_directions = list(
                 filter(lambda p: can_move(p[0] + self.pos[0], p[1] + self.pos[1]), DIRECTIONS))
@@ -66,7 +66,7 @@ class Mob(pygame.sprite.Sprite):
                 self.dir = random.choice(self.possible_directions)
                 self.is_moving = True
                 self.target_node = (self.pos[0] + self.dir[0], self.pos[1] + self.dir[1])
-                self.game.swap_entity_position(self.pos, self.target_node)
+                self.game.map.swap_entity_position(self.pos, self.target_node)
         else:
             if (self.rect.x / TILE_SIZE, self.rect.y / TILE_SIZE) != self.target_node:
                 self.rect.x += MOB_SPEED * self.dir[0]
@@ -93,7 +93,7 @@ class Mob(pygame.sprite.Sprite):
         ])
 
     def has_vision_in_position(self, x, y):
-        dist = self.game.entities_dijkstra[self][0]
+        dist = self.game.map.entities_path_find[self][0]
         return dist[x, y] <= self.vision_range and self.can_see(x, y)
 
     def draw_vision(self, x, y):

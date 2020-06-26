@@ -38,6 +38,8 @@ run the game:
 - [x] Mudar mapas
     - [x] Criar porta para o próximo mapa (fase)
 - [x] Contador de turnos
+- [x] Criar classe para controlar os mapas e as entidades
+- [ ] Criar uma classe para spritesheets, para poder acessar as tiles
 - [ ] Criar um timer
 
 ### Animation:
@@ -45,11 +47,11 @@ run the game:
     - [x] Colocar pegadas brancas no lugar dos espaços verdes (uma ideia)
     - [x] Adicionar um desenho de caveira em blocos exatamente atrás dos mobs
 - [x] Criar um range de visualização dos mobs (sinalizar com quadrados vermelhos com opacidade baixa)
+- [ ] Criar animação para apontar para as escadas, para sinalizar o objetivo do jogador
 - [ ] Criar animação do player e dos mobs quando estão parados
 
 ### Refactoring:
 - [ ] Replace lists to pygame vectors
-- [ ] Criar classe para controlar os mapas e as entidades
 - [ ] Mudar o algoritmo de dijkstra para o A* pathfiding algorithm e ver como fica
 - [ ] Refatorar a função loop da classe Game, porque para atualizar o player está atualizando todas as outras sprites
 - [x] (**) Resolver bug de mudança de mapas
