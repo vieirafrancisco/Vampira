@@ -6,13 +6,18 @@ Um jogo feito em pygame com o tema de Vampira
 **Windows:**
 
 run virtualenv:
-````powershell
-    cd venv/Scripts/
-    activate
+````bash
+virtualenv venv
+venv\Scripts\activate
 ````
+install dependencies:
+````bash
+pip install -r requirements.txt
+````
+
 run the game:
-````powershell
-    python run.py
+````bash
+python run.py
 ````
 
 ## ToDo Stuff:
