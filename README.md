@@ -1,23 +1,18 @@
-# Vampira
+<h1 align="center">Vampira</h1>
 
-Um jogo feito em pygame com o tema de Vampira
+<p align="center">
+    Um jogo feito em pygame com o tema de Vampira
+</p>
 
 ## How to run?
-**Windows:**
-
-run virtualenv:
+Install dependencies:
 ````bash
-virtualenv venv
-venv\Scripts\activate
-````
-install dependencies:
-````bash
-pip install -r requirements.txt
+poetry install
 ````
 
-run the game:
+Run game:
 ````bash
-python run.py
+poetry run python run.py
 ````
 
 ## ToDo Stuff:
